@@ -6,11 +6,15 @@
 <title>Kerja Bakti Beneran</title>
 <style>
   html, body { margin: 0; height: 100%; background: #FFF9E0; overflow: hidden; }
-  body { display: flex; align-items: center; justify-content: center; }
-  canvas { touch-action: manipulation; }
+  canvas { display: block; touch-action: manipulation; }
+  #putar { display: none; position: fixed; inset: 0; z-index: 1; flex-direction: column; align-items: center; justify-content: center; gap: 40px; padding: 24px; background: #FFF9E0; color: #2F7A38; font: bold 32px 'Andika', 'Trebuchet MS', sans-serif; text-align: center; }
+  #putar i { width: 70px; height: 120px; box-sizing: border-box; border: 8px solid #4A2B12; border-radius: 14px; background: #9CBF1F; animation: putar 2s ease-in-out infinite alternate; }
+  @keyframes putar { from, 30% { transform: rotate(0); } 70%, to { transform: rotate(90deg); } }
+  @media (orientation: portrait) and (pointer: coarse) { #putar { display: flex; } }
 </style>
 </head>
 <body>
+<div id="putar"><i></i>Putar HP-mu ke samping, ya!</div>
 <script src="lib/phaser.min.js"></script>
 <script src="assets.js"></script>
 <script src="game.js"></script>

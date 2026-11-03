@@ -280,7 +280,7 @@ class Mission extends Phaser.Scene {
     this.finished = true;
     SELESAI.add(this.n);
     sfx('clap');
-    const shade = this.add.rectangle(W / 2, H / 2, W, H, 0x2b1a0a, 0.5).setDepth(80).setInteractive();
+    const shade = this.add.rectangle(W / 2, H / 2, W * 3, H * 5, 0x2b1a0a, 0.5).setDepth(80).setInteractive();
     const c = this.add.container(W / 2, H / 2).setDepth(81);
     const ada = !!stars, dy = ada ? 0 : 45;   // tanpa bintang, kartu lebih pendek
     c.add(kertas(this, 0, 0, 1060, ada ? 470 : 380, { r: 36, bw: 6 }));
@@ -865,7 +865,7 @@ class M5 extends Mission {
 
   build() {
     this.add.image(W / 2, H / 2, 'latar-misi5').setDisplaySize(W, H).setDepth(0);
-    this.gelap = this.add.rectangle(W / 2, H / 2, W, H, 0x241F55, 1).setAlpha(0).setDepth(8);
+    this.gelap = this.add.rectangle(W / 2, H / 2, W * 3, H * 5, 0x241F55, 1).setAlpha(0).setDepth(8);
     if (!this.textures.exists('cahaya')) {
       const c = this.textures.createCanvas('cahaya', 256, 256), x = c.getContext();
       const gr = x.createRadialGradient(128, 128, 4, 128, 128, 128);
@@ -976,11 +976,36 @@ class M5 extends Mission {
   }
 }
 
+// layar penuh: area main tetap 1280x720 di tengah, sisi kiri-kanan diisi cerminan latar agar sambungannya menyatu
+function penuhkan(s) {
+  const asli = s.children.list.filter((o) => o.type === 'Image' && (o.texture.key.startsWith('kusam-') || (o.x === W / 2 && o.y === H / 2 && Math.abs(o.displayWidth - W) < 1)));
+  const salinan = [];
+  for (const a of asli) for (const k of [-1, 1]) {
+    const cx = a.x + (0.5 - a.originX) * a.displayWidth, cy = a.y + (0.5 - a.originY) * a.displayHeight;
+    const m = s.add.image(k * W + W - cx, cy, a.texture.key).setScale(a.scaleX, a.scaleY).setDepth(a.depth).setFlipX(true);
+    if (a.isCropped) m.setCrop(a._crop.x, a._crop.y, a._crop.width, a._crop.height);
+    salinan.push([a, m]);
+  }
+  const selaras = () => {
+    const cam = s.cameras.main, ukuran = s.scale.baseSize;   // scene yang dibuka ulang kameranya kembali ke 1280x720
+    if (cam.width !== ukuran.width || cam.height !== ukuran.height) cam.setSize(ukuran.width, ukuran.height);
+    cam.setScroll(Math.round((W - cam.width) / 2), Math.round((H - cam.height) / 2));
+    for (const [a, m] of salinan) m.setAlpha(a.alpha).setVisible(a.active && a.visible);
+  };
+  selaras();
+  s.events.on('postupdate', selaras);
+  s.events.once('shutdown', () => s.events.off('postupdate', selaras));
+}
+[Boot, Title, Menu, Mission].forEach((C) => {
+  const create = C.prototype.create;
+  C.prototype.create = function () { create.call(this); penuhkan(this); };
+});
+
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   width: W,
   height: H,
   backgroundColor: '#FFF9E0',
-  scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+  scale: { mode: Phaser.Scale.EXPAND, autoCenter: Phaser.Scale.CENTER_BOTH },
   scene: [Boot, Title, Menu, M1, M2, M3, M4, M5],
 });
