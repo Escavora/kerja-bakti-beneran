@@ -63,6 +63,70 @@ const SFX = {
   clap: () => { for (let i = 0; i < 10; i++) noise(0.07, 0.18, i * 0.11); },
 };
 function sfx(name) { try { if (SFX[name]) SFX[name](); } catch (e) { /* abaikan */ } }
+
+// ---------- musik latar ----------
+// Lagu ceria dibuat langsung dari osilator (tanpa berkas audio): C - Am - F - G, 132 bpm, diulang terus.
+const MUSIK = {
+  langkah: 60 / 132 / 2,   // satu not per-delapan
+  bass: [[48, 55], [45, 52], [41, 48], [43, 50]],
+  akor: [[60, 64, 67], [57, 60, 64], [57, 60, 65], [59, 62, 67]],
+  lagu: [
+    79, 0, 79, 81, 79, 76, 72, 76,
+    81, 0, 81, 84, 81, 79, 76, 0,
+    77, 0, 77, 79, 81, 79, 77, 72,
+    74, 0, 79, 77, 74, 71, 74, 0,
+  ],
+};
+let musikGain = null, musikNoise = null, musikNext = 0, musikStep = 0, musikTimer = null;
+function nada(m, t, dur, type, vol) {
+  const a = AC, o = a.createOscillator(), g = a.createGain();
+  o.type = type;
+  o.frequency.value = 440 * Math.pow(2, (m - 69) / 12);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(musikGain);
+  o.start(t); o.stop(t + dur + 0.02);
+}
+function musikLangkah(i, t) {
+  const bar = (i >> 3) & 3, k = i & 7, d = MUSIK.langkah;
+  if (k === 0 || k === 4) nada(MUSIK.bass[bar][k / 4], t, d * 1.8, 'sine', 0.55);
+  if (k === 2 || k === 6) MUSIK.akor[bar].forEach((m) => nada(m, t, d * 0.9, 'triangle', 0.16));
+  if (MUSIK.lagu[i]) nada(MUSIK.lagu[i], t, d * 1.5, 'triangle', 0.4);
+  if (k & 1) {   // kocokan halus di sela ketukan
+    const s = AC.createBufferSource(), g = AC.createGain();
+    s.buffer = musikNoise;
+    g.gain.setValueAtTime(0.12, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+    s.connect(g); g.connect(musikGain); s.start(t);
+  }
+}
+function musikJalan() {
+  const a = AC;
+  if (musikNext < a.currentTime) musikNext = a.currentTime + 0.05;
+  while (musikNext < a.currentTime + 0.4) {
+    musikLangkah(musikStep, musikNext);
+    musikStep = (musikStep + 1) % 32;
+    musikNext += MUSIK.langkah;
+  }
+}
+function mulaiMusik() {
+  if (musikTimer) return;
+  try {
+    const a = ac(); if (!a) return;
+    musikGain = a.createGain(); musikGain.gain.value = 0.1; musikGain.connect(a.destination);
+    const n = Math.floor(a.sampleRate * 0.05);
+    musikNoise = a.createBuffer(1, n, a.sampleRate);
+    const d = musikNoise.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    musikJalan();
+    musikTimer = setInterval(musikJalan, 100);
+  } catch (e) { /* tanpa musik */ }
+}
+['pointerdown', 'keydown'].forEach((e) => document.addEventListener(e, mulaiMusik, { once: true }));
+document.addEventListener('visibilitychange', () => {   // diam saat tab disembunyikan
+  if (!AC) return;
+  if (document.hidden) AC.suspend(); else AC.resume();
+});
 function speak(text) {
   try {
     speechSynthesis.cancel();
