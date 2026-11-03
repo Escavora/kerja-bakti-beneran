@@ -395,7 +395,8 @@ class Title extends Phaser.Scene {
     const bayang = { shadow: { offsetX: 0, offsetY: 6, color: 'rgba(90,52,24,0.28)', blur: 10, fill: true } };
     judul(this, W / 2, 128, 'KERJA BAKTI', 112, '#2F7A38', bayang);
     judul(this, W / 2, 250, 'BENERAN', 150, '#2F7A38', bayang);
-    txt(this, W / 2, 360, 'Ayo jadi warga Kampung Gotong Royong!', 36, INK);
+    const sapa = txt(this, W / 2, 360, 'Ayo jadi warga Kampung Gotong Royong!', 32, INK).setDepth(2);
+    kertas(this, W / 2, 360, sapa.width + 36, sapa.height + 14, { r: 20, bw: 4 }).setDepth(1);
 
     // warga datang dari kiri dan kanan sambil melambai
     [['ibu', 190, 0.9, 0], ['anakp', 365, 0.95, 250], ['anakl', 915, 0.95, 450], ['bapak', 1090, 0.9, 150]].forEach(([n, x, k, tunda]) => {
