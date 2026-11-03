@@ -410,8 +410,8 @@ class Title extends Phaser.Scene {
 
 // lima tempat di peta: pusat tempat, daerah ketuk, dan posisi papan
 const TEMPAT = [
-  { n: 1, cx: 150, cy: 230, w: 330, h: 270, sx: 215, sy: 400 },
-  { n: 2, cx: 615, cy: 225, w: 330, h: 260, sx: 610, sy: 372 },
+  { n: 1, cx: 150, cy: 230, w: 330, h: 270, sx: 205, sy: 400 },
+  { n: 2, cx: 615, cy: 225, w: 330, h: 260, sx: 615, sy: 372 },
   { n: 3, cx: 1070, cy: 195, w: 340, h: 260, sx: 1045, sy: 378 },
   { n: 4, cx: 345, cy: 520, w: 520, h: 280, sx: 345, sy: 648 },
   { n: 5, cx: 1020, cy: 530, w: 340, h: 250, sx: 1020, sy: 652 },
@@ -441,22 +441,22 @@ class Menu extends Phaser.Scene {
       const zona = this.add.zone(tp.cx, tp.cy, tp.w, tp.h).setDepth(5).setInteractive({ useHandCursor: true });
       const papan = this.add.container(tp.sx, tp.sy).setDepth(10);
       const sh = this.add.graphics();
-      sh.fillStyle(0x3a1f0a, 0.10); sh.fillRoundedRect(-200, -39 + 12, 400, 78, 30);
-      sh.fillStyle(0x3a1f0a, 0.14); sh.fillRoundedRect(-198, -39 + 7, 400, 78, 30);
-      papan.add([sh, kayu(this, 'tombol', 400, 78, KAYU_TOMBOL)]);
+      sh.fillStyle(0x3a1f0a, 0.10); sh.fillRoundedRect(-190, -39 + 12, 380, 78, 30);
+      sh.fillStyle(0x3a1f0a, 0.14); sh.fillRoundedRect(-188, -39 + 7, 380, 78, 30);
+      papan.add([sh, kayu(this, 'tombol', 380, 78, KAYU_TOMBOL)]);
       const beres = SELESAI.has(tp.n);
-      if (beres) papan.add(centang(this, -162, 0));
+      if (beres) papan.add(centang(this, -150, 0));
       else {
-        const lencana = this.add.graphics({ x: -162, y: 0 });
+        const lencana = this.add.graphics({ x: -150, y: 0 });
         lencana.fillStyle(MUSTARD); lencana.fillCircle(0, 0, 27);
-        papan.add([lencana, judul(this, -162, 3, String(tp.n), 38, INK)]);
+        papan.add([lencana, judul(this, -150, 3, String(tp.n), 38, INK)]);
       }
-      papan.add(txt(this, 26, 0, JUDUL[tp.n], 32, KRIM, { wordWrap: { width: 320 } }));
+      papan.add(txt(this, 28, 0, JUDUL[tp.n], 30, KRIM, { wordWrap: { width: 310 } }));
       const buka = () => { sfx('tap'); this.scene.start('M' + tp.n); };
       zona.on('pointerdown', buka);
       zona.on('pointerover', () => papan.setScale(1.06));
       zona.on('pointerout', () => papan.setScale(1));
-      papan.setSize(400, 78).setInteractive({ useHandCursor: true }).on('pointerdown', buka);
+      papan.setSize(380, 78).setInteractive({ useHandCursor: true }).on('pointerdown', buka);
     });
 
     if (SELESAI.size === TEMPAT.length) {   // semua misi beres
